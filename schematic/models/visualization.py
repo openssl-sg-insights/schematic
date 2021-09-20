@@ -250,7 +250,6 @@ class VisualizeModel(object):
                 elif component not in component_dependencies.keys():
                     node_dependencies = []
                 component_dependencies[component] = node_dependencies
-        breakpoint()
 
         #create a trace for the edges
         trace_edges = go.Scatter(x=x_edges,
@@ -305,7 +304,7 @@ class VisualizeModel(object):
         return
 
     def make_dash_cytograph(self, base_path, serve_dash):
-        output_path = base_path + '/cytograph_viz.model'
+        output_path = base_path + '/cytograph_viz.model.html'
 
         # Create Network:
         cdg = self.sg.se.get_digraph_by_edge_type('requiresComponent')
@@ -316,31 +315,34 @@ class VisualizeModel(object):
         pos = self.get_pos(cdg)
         x_nodes, y_nodes, text, pos = self.convert_update_pos(pos)
         x_edges, y_edges = self.get_edge_coords(pos, edges)
-        
+
+        # Create elements list:
+        elements = []
+        node_ele_dict = {'data':{}, 'position': {}}
+        edge_ele_dict = {'data':{}}
+        for i, name in enumerate(text):
+                elements.append({
+                    'data': {'id': name, 'label':name}, 
+                    'position': {'x': x_nodes[i], 'y': y_nodes[i]}})
+        for edge in enumerate(cdg.body):
+                source_target = edge[1].replace('\t', '').replace('"', '').split(' -> ')
+                elements.append({
+                    'data': {'source': source_target[0],
+                            'target': source_target[1], 
+                            'label': ' to '.join(source_target)}})
+        app = dash.Dash(__name__)
         app.layout = html.Div([
             cyto.Cytoscape(
-            id='cytoscape-elements-basic',
-            layout={'name': 'preset'},
-            style={'width': '100%', 'height': '400px'},
-            elements=[
-                # The nodes elements
-                {'data': {'id': 'one', 'label': 'Node 1'},
-                 'position': {'x': 50, 'y': 50}},
-                {'data': {'id': 'two', 'label': 'Node 2'},
-                 'position': {'x': 200, 'y': 200}},
-
-                # The edge elements
-                {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 2'}}
-            ]
-         )])
-
-        if serve_dash:
-            app = dash.Dash()
-            app.layout = html.Div([
-                dcc.Graph(figure=fig)
-            ])
-            app.run_server(debug=False, use_reloader=False)  # Turn off reloader if inside Jupyter
-
+                id='Cytoscape ',
+                layout={'name': 'preset'},
+                style={'width': '100%', 'height': '400px'},
+                elements=elements
+            ),
+         ])
+        app.run_server(debug=True, use_reloader=False)
+        #fig.write_html('output_path')
+        
         return
-
+#if __name__ == '__main__':
+    #app.run_server(debug=False, use_reloader=False)
     
