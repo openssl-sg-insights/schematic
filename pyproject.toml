@@ -61,6 +61,8 @@ dash-cytoscape = "^0.3.0"
 matplotlib = "^3.4.3"
 dash = "^2.0.0"
 demos = "^0.0.1"
+dash-bootstrap-components = "^1.0.1"
+"js.d3" = "^3.5.5"
 
 
 [tool.poetry.dev-dependencies]
