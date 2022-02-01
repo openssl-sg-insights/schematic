@@ -16,6 +16,12 @@ from schematic.utils.io_utils import load_json
 
 DATA_DIR = str(Path('tests/data/visualization').resolve())
 
+'''
+Find a way to auto generate all the JSON files.
+
+'''
+
+
 def convert_string_cols_to_json(df: pd.DataFrame, cols_to_modify: list):
     """Converts values in a column from strings to JSON list 
     for upload to Synapse.
@@ -28,9 +34,9 @@ def convert_string_cols_to_json(df: pd.DataFrame, cols_to_modify: list):
             df[col] = df[col].apply(lambda x: json.dumps([y.strip() for y in x]) if x != "NaN" and x  and x == np.nan else x)
     return df
 
-json_path = os.path.join(DATA_DIR, 'json')
-csv_output_path = os.path.join(DATA_DIR, 'csv')
-jsonld_file_path = os.path.join(DATA_DIR, 'jsonld')
+json_path = os.path.join(DATA_DIR, 'NF_json')
+csv_output_path = os.path.join(DATA_DIR, 'NF_csv')
+jsonld_file_path = os.path.join(DATA_DIR, 'NF_jsonld')
 
 
 json_file_paths = [os.path.join(json_path, f) for f in os.listdir(json_path) if os.path.isfile(os.path.join(json_path, f))]
@@ -99,4 +105,4 @@ for file_path in json_file_paths:
 
 merged_df = pd.concat(df_store)
 merged_df = merged_df[cols]
-merged_df.to_csv(os.path.join(csv_output_path, 'merged.vis_data.csv'))
+merged_df.to_csv(os.path.join(csv_output_path, 'NF_merged.vis_data.csv'))
