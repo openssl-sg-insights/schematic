@@ -92,55 +92,8 @@ class get_dependencies(object):
         js = df_n.to_json(os.path.join(json_output_path,self.schema_name.split('_')[0] +'_normal_dependencies.json'),orient = 'index')
         return
 
+
     def get_tangled_tree_data(self):
-        csv_output_path = os.path.join(OUTPUT_DATA_DIR, 'NF_csv')
-        json_output_path = os.path.join(OUTPUT_DATA_DIR, 'NF_json')
-        cdg = self.sg.se.get_digraph_by_edge_type('requiresComponent')
-        nodes = cdg.nodes()
-        
-
-        all_dependencies = {}
-        parent_relationships = {}
-        for node in nodes:
-            if node != 'ImagingLevel2Channels':
-                parent_relationships[node] = []
-        source_nodes = []
-        for node in nodes:
-            class_info = self.sg.se.explore_class(node)
-            if not class_info['component_dependencies']:
-                source_nodes.append(node)
-            if 'ImagingLevel2Channels' in source_nodes:
-                source_nodes.remove('ImagingLevel2Channels')
-            rev_cdg = nx.DiGraph.reverse(cdg)
-            dependency_depth = nx.shortest_path_length(rev_cdg, source=node)
-            all_dependencies[node] = dependency_depth
-            for cd in class_info['component_dependencies']:
-                if cd != 'ImagingLevel2Channels':
-                    try:
-                        parent_relationships[node].append(cd)
-                    except:
-                        breakpoint()
-
-        layers = all_dependencies[source_nodes[0]]
-        for n in source_nodes:
-            layers[n] = 0
-        
-
-
-        layered_pc = [[] for i in range(0, max(layers.values())+1)]
-        for component, i in layers.items():
-            if parent_relationships[component]:
-                layered_pc[i].append({'id': component, 'parents': parent_relationships[component]})
-            else:
-                layered_pc[i].append({'id': component})
-            #layered_pc[i].append([component, parent_relationships[component]])
-        json_string = json.dumps(layered_pc)
-        output_file_name = self.schema_name.split('_')[0] + '_tangled_tree.json'
-        with open(os.path.join(json_output_path, output_file_name), 'w') as outfile:
-            outfile.write(json_string)
-        breakpoint()
-
-    def get_tangled_tree_data_2(self):
 
         csv_output_path = os.path.join(OUTPUT_DATA_DIR, 'NF_csv')
         json_output_path = os.path.join(OUTPUT_DATA_DIR, 'NF_json')
@@ -151,6 +104,18 @@ class get_dependencies(object):
         mm_graph = self.sg.se.get_nx_schema()
         subg = self.sg.get_subgraph_by_edge_type(mm_graph, 'requiresComponent')
         topological_gen = list(reversed(list(nx.topological_generations(subg))))
+        topological_sort = list(reversed(list(nx.topological_sort(subg))))
+
+        not_source = []
+        for node in nodes:
+            for edge_pair in edges:
+                if node == edge_pair[0]:
+                    not_source.append(node)
+        source_nodes = []
+        for node in nodes:
+            if node not in not_source:
+                source_nodes.append(node)
+
         
         child_parents = {}
         for edge in edges:
@@ -158,6 +123,76 @@ class get_dependencies(object):
                 child_parents[edge[0]] = []
             child_parents[edge[0]].append(edge[1])
 
+        parent_children = {}
+        for edge in edges:
+            if edge[1] not in parent_children.keys():
+                parent_children[edge[1]] = []
+            parent_children[edge[1]].append(edge[0])
+
+        # Reconfigure topological gen to move things back appropriate layers if 
+        # they would have a back reference
+        # This would solve the issues with HTAN.
+
+        component_layers = {com:i for i, lev in enumerate(topological_gen)
+                            for com in lev}
+
+        component_layers_copy = {com:i for i, lev in enumerate(topological_gen)
+                            for com in lev}
+
+        for level in topological_gen:
+            for comp in level:
+                if comp in child_parents.keys():
+                    comp_level = component_layers[comp]
+                    parent_levels = []
+                    for par in child_parents[comp]:
+                        try:
+                            parent_levels.append(component_layers[par])
+                            max_parent_level = max(parent_levels)
+                            component_layers_copy[comp] = max_parent_level + 1
+                        except:
+                            breakpoint()
+        component_layers_copy_copy = component_layers_copy
+        for level in topological_gen:
+            for comp in level:
+                if comp in child_parents.keys():
+                    comp_level = component_layers[comp]
+                    parent_levels = []
+                    modify_par = []
+                    for par in child_parents[comp]:
+                        parent_levels.append(component_layers_copy[par])
+                    try:
+                        for par in child_parents[comp]:
+                            # if one of the parents is a source node move
+                            # it to the same level as the other node the child connects to so
+                            # that the connections will not be backwards (and result in a broken line)
+                            if (par in source_nodes and 
+                                (parent_levels.count(parent_levels[0]) != len(parent_levels))):
+                                parent_levels.pop(-1)
+                                modify_par.append(par)
+                            max_parent_level = max(parent_levels)
+                            component_layers_copy_copy[comp] = max_parent_level + 1
+                    except:
+                        breakpoint()
+                    for par in modify_par:
+                        component_layers_copy_copy[par] = max_parent_level
+
+        for key, i in component_layers_copy_copy.items():
+            if key not in topological_gen[i]:
+                topological_gen[i].append(key)
+                topological_gen[component_layers[key]].remove(key)
+
+        # move source nodes to the bottom of their layer in the
+        # tangled tree for aesthetics.
+        comps_checked = []
+        for i, components in enumerate(topological_gen):
+            comps_to_move = []
+            for comp in components:
+                if comp in source_nodes:
+                    comps_to_move.append(comp)
+            for comp in comps_to_move:
+                topological_gen[i].remove(comp)
+                topological_gen[i].append(comp)
+    
         num_layers = len(topological_gen)
         layered_pc = [[] for i in range(0, num_layers)]
         for i, component in enumerate(topological_gen):
@@ -169,78 +204,12 @@ class get_dependencies(object):
                         layered_pc[i].append({'id': comp})
             except:
                 breakpoint()
+
+
         json_string = json.dumps(layered_pc)
         output_file_name = self.schema_name.split('_')[0] + '_tangled_tree_test.json'
         with open(os.path.join(json_output_path, output_file_name), 'w') as outfile:
             outfile.write(json_string)
-        breakpoint()
-        '''
-        nodes = cdg.nodes()
-        edges = cdg.edges()
-
-        not_source = []
-        for node in nodes:
-            for edge_pair in edges:
-                if node in edge_pair[0]:
-                    not_source.append(node)
-        source_nodes = []
-        for node in nodes:
-            if node not in not_source:
-                source_nodes.append(node)
-
-        #breakpoint()
-
-
-        all_dependencies = {}
-        all_dependencies_list = []
-        parent_relationships = {}
-        for node in nodes:
-            if node != 'ImagingLevel2Channels':
-                parent_relationships[node] = []
-        #source_nodes = []
-        for node in nodes:
-            class_info = self.sg.se.explore_class(node)
-            #if not class_info['component_dependencies']:
-                #source_nodes.append(node)
-            #if 'ImagingLevel2Channels' in source_nodes:
-                #source_nodes.remove('ImagingLevel2Channels')
-            rev_cdg = nx.DiGraph.reverse(cdg)
-            dependency_depth = nx.shortest_path_length(rev_cdg, source=node)
-            all_dependencies[node] = dependency_depth
-            all_dependencies_list.append([k for k in dependency_depth.keys()])
-            for cd in class_info['component_dependencies']:
-                if cd != 'ImagingLevel2Channels':
-                    try:
-                        parent_relationships[node].append(cd)
-                    except:
-                        breakpoint()
-        breakpoint()
-                
-        
-        layers = all_dependencies[source_nodes[0]]
-        for n in source_nodes:
-            layers[n] = 0
-        
-
-
-        layered_pc = [[] for i in range(0, max(layers.values())+1)]
-        for component, i in layers.items():
-            if parent_relationships[component]:
-                layered_pc[i].append({'id': component, 'parents': parent_relationships[component]})
-            else:
-                layered_pc[i].append({'id': component})
-            #layered_pc[i].append([component, parent_relationships[component]])
-        
-        json_string = json.dumps(layered_pc)
-        output_file_name = self.schema_name.split('_')[0] + '_tangled_tree.json'
-        with open(os.path.join(json_output_path, output_file_name), 'w') as outfile:
-            outfile.write(json_string)
-
-        '''
-
-
-
-
         
 
 if __name__ == '__main__':
@@ -248,7 +217,7 @@ if __name__ == '__main__':
     #get_dependencies("HTAN_schema_v21_10.model.jsonld").get_tangled_tree_data()
     #get_dependencies("nf_research_tools.rdb.model.jsonld").get_tangled_tree_data_2()
 
-    get_dependencies("HTAN_schema_v21_10.model.jsonld").find_dependencies()
-    get_dependencies("HTAN_schema_v21_10.model.jsonld").get_tangled_tree_data_2()
+    get_dependencies("nf_research_tools.rdb.model.jsonld").find_dependencies()
+    get_dependencies("nf_research_tools.rdb.model.jsonld").get_tangled_tree_data()
 
    
