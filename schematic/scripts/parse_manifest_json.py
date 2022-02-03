@@ -39,7 +39,7 @@ csv_output_path = os.path.join(DATA_DIR, 'NF_csv')
 jsonld_file_path = os.path.join(DATA_DIR, 'NF_jsonld')
 
 
-json_file_paths = [os.path.join(json_path, f) for f in os.listdir(json_path) if os.path.isfile(os.path.join(json_path, f))]
+json_file_paths = [os.path.join(json_path, f) for f in os.listdir(json_path) if os.path.isfile(os.path.join(json_path, f)) and f.endswith('.json')]
 jsonld_data_path = [os.path.join(jsonld_file_path, f) for f in os.listdir(jsonld_file_path) if os.path.isfile(os.path.join(jsonld_file_path, f)) and f.endswith('.jsonld')][0]
 
 jsonld_load = load_json(jsonld_data_path)
@@ -48,7 +48,11 @@ jsonld_load = load_json(jsonld_data_path)
 # have to provide.
 df_store = []
 for file_path in json_file_paths:
-    data_type = file_path.split('/')[-1].split('.')[-3]
+
+    try:
+        data_type = file_path.split('/')[-1].split('.')[-3]
+    except:
+        breakpoint()
     load_data = load_json(file_path)
     data_dict = {}
     # Gather all attribues, their valid values and requirements
@@ -67,9 +71,9 @@ for file_path in json_file_paths:
         if 'sms:displayName' in dic.keys():
             key = dic['sms:displayName']
             if key in data_dict.keys():
-                data_dict[key]['Display Name'] = dic['sms:displayName']
+                data_dict[key]['Attribute'] = dic['sms:displayName']
                 data_dict[key]['Label'] = dic['rdfs:label']
-                data_dict[key]['Comment'] = dic['rdfs:comment']
+                data_dict[key]['Description'] = dic['rdfs:comment']
                 if 'validationRules' in dic.keys():
                     breakpoint()
                     data_dict[key]['Validation Rules'] = dic['validationRules']
@@ -96,7 +100,7 @@ for file_path in json_file_paths:
             data_dict[key]['Conditional Requirements'] = ' || '.join(data_dict[key]['Conditional Requirements'])
     df = pd.DataFrame(data_dict)
     df = df.T
-    cols = ['Display Name', 'Label', 'Comment', 'Required', 'Cond_Req', 'Valid Values', 'Conditional Requirements', 'Validation Rules', 'Component']
+    cols = ['Attribute', 'Label', 'Description', 'Required', 'Cond_Req', 'Valid Values', 'Conditional Requirements', 'Validation Rules', 'Component']
     cols = [col for col in cols if col in df.columns]
     df = df[cols]
     df = convert_string_cols_to_json(df, ['Valid Values'])
