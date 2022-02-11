@@ -34,9 +34,9 @@ def convert_string_cols_to_json(df: pd.DataFrame, cols_to_modify: list):
             df[col] = df[col].apply(lambda x: json.dumps([y.strip() for y in x]) if x != "NaN" and x  and x == np.nan else x)
     return df
 
-json_path = os.path.join(DATA_DIR, 'NF_json')
-csv_output_path = os.path.join(DATA_DIR, 'NF_csv')
-jsonld_file_path = os.path.join(DATA_DIR, 'NF_jsonld')
+json_path = os.path.join(DATA_DIR, 'HTAN_json')
+csv_output_path = os.path.join(DATA_DIR, 'HTAN_csv')
+jsonld_file_path = os.path.join(DATA_DIR, 'HTAN_jsonld')
 
 
 json_file_paths = [os.path.join(json_path, f) for f in os.listdir(json_path) if os.path.isfile(os.path.join(json_path, f)) and f.endswith('.json')]
@@ -89,7 +89,7 @@ for file_path in json_file_paths:
                     
                     attribute = list(conditional_dependencies['if']['properties'])[0]
                     value = conditional_dependencies['if']['properties'][attribute]['enum']
-                    conditional_statement = f'{attribute} is "{value[0]}"'
+                    conditional_statement = f'{attribute} -is- "{value[0]}"'
                     if conditional_statement not in data_dict[key]['Conditional Requirements']:
                         data_dict[key]['Cond_Req'] = True
                         data_dict[key]['Conditional Requirements'].extend([conditional_statement])
@@ -109,4 +109,4 @@ for file_path in json_file_paths:
 
 merged_df = pd.concat(df_store)
 merged_df = merged_df[cols]
-merged_df.to_csv(os.path.join(csv_output_path, 'NF_merged.vis_data.csv'))
+merged_df.to_csv(os.path.join(csv_output_path, 'merged.vis_data.csv'))
