@@ -34,9 +34,3 @@ temp = MaterializedViewSchema(
 ent = syn.store(temp)
 breakpoint()
 
-'''
-temp = syn.tableQuery(f"select * from {ent.id}")
-temp.asDataFrame()
-# Clean up materialized view
-syn.delete(ent)
-'''
