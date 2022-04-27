@@ -6,7 +6,7 @@ import urllib.request
 
 import connexion
 from connexion.decorators.uri_parsing import Swagger2URIParser
-from flask import current_app as app, request, g, jsonify
+from flask import current_app as app, request, g, jsonify, abort
 from werkzeug.debug import DebuggedApplication
 
 from schematic import CONFIG
@@ -17,6 +17,7 @@ from schematic.schemas.generator import SchemaGenerator
 
 from schematic.store.synapse import SynapseStorage
 
+import validators
 
 # def before_request(var1, var2):
 #     # Do stuff before your route executes
@@ -25,6 +26,9 @@ from schematic.store.synapse import SynapseStorage
 #     # Do stuff after your route executes
 #     pass
 
+# @app.errorhandler(404)
+# def resource_not_found(e):
+#     return jsonify(error=str(e)), 404
 
 def config_handler(asset_view=None):
     path_to_config = app.config["SCHEMATIC_CONFIG"]
@@ -58,16 +62,22 @@ def initalize_metadata_model(schema_url):
 
 def get_temp_jsonld(schema_url):
     # retrieve a JSON-LD via URL and store it in a temporary location
-    with urllib.request.urlopen(schema_url) as response:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonld") as tmp_file:
-            shutil.copyfileobj(response, tmp_file)
+    if schema_url.strip():
+        if validators.url(schema_url):
+            with urllib.request.urlopen(schema_url) as response:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonld") as tmp_file:
+                        shutil.copyfileobj(response, tmp_file)
+        else:
+            abort(400, description="Bad request. Url is not valid")
+    else:
+        abort(404, description="url not found")
 
     # get path to temporary JSON-LD file
     return tmp_file.name
 
 
 # @before_request
-def get_manifest_route(schema_url, title, oauth, use_annotations, dataset_id=None, asset_view = None):
+def get_manifest_route(schema_url, oauth, use_annotations, dataset_id=None, asset_view = None, title=None):
     # call config_handler()
     config_handler(asset_view = asset_view)
 

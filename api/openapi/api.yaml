@@ -5,10 +5,8 @@ info:
   description: >-
     This service exposes core functionalities from schematic as REST API
     endpoints
-    
 servers:
   - url: /v1
-
 paths:
   /manifest/generate:
     get:
@@ -19,6 +17,7 @@ paths:
           name: schema_url
           schema:
             type: string
+            minLength: 1
           description: Data Model URL
           example: >-
             https://raw.githubusercontent.com/Sage-Bionetworks/schematic/develop/tests/data/example.model.jsonld
@@ -27,9 +26,8 @@ paths:
           name: title
           schema:
             type: string
-          description: >
-            Title of Manifest or Title Prefix, 
-            if making multiple manifests
+          description: |
+            Title of Manifest or Title Prefix,  if making multiple manifests
           example: Example
           required: false
         - in: query
@@ -37,13 +35,13 @@ paths:
           style: form
           schema:
             type: array
-            items: 
+            items:
               type: string
             nullable: true
           description: >
-            Data Model Component(s). 
-            To make all manifests, enter "all manifests".
-          example: 
+            Data Model Component(s).  To make all manifests, enter "all
+            manifests".
+          example:
             - Patient
             - Biospecimen
           required: true
@@ -67,23 +65,39 @@ paths:
             type: string
             nullable: true
           description: >
-            Dataset ID. If you want to get an existing manifest, this dataset_id should be the parent ID of the manifest.
+            Dataset ID. If you want to get an existing manifest, this dataset_id
+            should be the parent ID of the manifest.
           required: false
         - in: query
           name: asset_view
           schema:
             type: string
             nullable: true
-          description: ID of view listing all project data assets. E.g. for Synapse this would be the Synapse ID of the fileview listing all data assets for a given project.(i.e. master_fileview in config.yml)
+          description: >-
+            ID of view listing all project data assets. E.g. for Synapse this
+            would be the Synapse ID of the fileview listing all data assets for
+            a given project.(i.e. master_fileview in config.yml)
           required: false
       operationId: api.routes.get_manifest_route
       responses:
-        "201":
+        '200':
           description: Googlesheet link created
           content:
             application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  type:
+                    string
+                example:
+                  - google url 1
+                  - google url 2
+        '400':
+          description: Bad request. Make sure your input is valid
+        '404':
+          description: Resource not found
+        '500':
+          description: Check schematic log
       tags:
         - Manifest Operations
   /manifest/download:
@@ -104,7 +118,10 @@ paths:
           schema:
             type: string
             nullable: false
-          description: ID of view listing all project data assets. For example, for Synapse this would be the Synapse ID of the fileview listing all data assets for a given project.(i.e. master_fileview in config.yml)
+          description: >-
+            ID of view listing all project data assets. For example, for Synapse
+            this would be the Synapse ID of the fileview listing all data assets
+            for a given project.(i.e. master_fileview in config.yml)
           example: syn28559058
           required: true
         - in: query
@@ -117,12 +134,20 @@ paths:
           required: true
       operationId: api.routes.download_manifest
       responses:
-        "200":
-          description: A manifest gets downloaded and local file path of the manifest gets returned.
+        '200':
+          description: >-
+            A manifest gets downloaded and local file path of the manifest gets
+            returned.
           content:
             text/csv:
               schema:
                 type: string
+        '400':
+          description: Bad request. Make sure your input is valid
+        '404':
+          description: Resource not found
+        '500':
+          description: Check schematic log
       tags:
         - Manifest Operations
   /model/validate:
@@ -135,8 +160,6 @@ paths:
             schema:
               type: object
               properties:
-                # csv_file will be the field name in
-                # this multipart request
                 csv_file:
                   type: string
                   format: binary
@@ -159,7 +182,7 @@ paths:
           required: true
       operationId: api.routes.validate_manifest_route
       responses:
-        "200":
+        '200':
           description: Manifest Validated
           content:
             application/json:
@@ -217,9 +240,12 @@ paths:
           name: manifest_record_type
           schema:
             type: string
-            enum: [ "table", "entity", "both"]
+            enum:
+              - table
+              - entity
+              - both
           description: Manifest storage type.
-          example: 'table'
+          example: table
         - in: query
           name: input_token
           schema:
@@ -229,20 +255,31 @@ paths:
           required: true
       operationId: api.routes.submit_manifest_route
       responses:
-        "200":
-          description: Manifest ID (e.g. Synapse ID if your asset management platform is Synapse)
+        '200':
+          description: >-
+            Manifest ID (e.g. Synapse ID if your asset management platform is
+            Synapse)
           content:
             application/json:
               schema:
                 type: string
-        "500":
+        '500':
           description: Check schematic log
       tags:
         - Model Operations
   /model/component-requirements:
     get:
-      summary: Given a source model component (see https://w3id.org/biolink/vocab/category for definnition of component), return all components required by it.
-      description: Given a source model component (see https://w3id.org/biolink/vocab/category for definnition of component), return all components required by it. Useful to construct requirement dependencies not only between specific attributes but also between categories/components of attributes; it can be utilized to track metadata completion progress across multiple categories of attributes.
+      summary: >-
+        Given a source model component (see
+        https://w3id.org/biolink/vocab/category for definnition of component),
+        return all components required by it.
+      description: >-
+        Given a source model component (see
+        https://w3id.org/biolink/vocab/category for definnition of component),
+        return all components required by it. Useful to construct requirement
+        dependencies not only between specific attributes but also between
+        categories/components of attributes; it can be utilized to track
+        metadata completion progress across multiple categories of attributes.
       parameters:
         - in: query
           name: schema_url
@@ -256,7 +293,9 @@ paths:
           name: source_component
           schema:
             type: string
-          description: an attribute label indicating the source component. (i.e. Patient, Biospecimen, ScRNA-seqLevel1, ScRNA-seqLevel2)
+          description: >-
+            an attribute label indicating the source component. (i.e. Patient,
+            Biospecimen, ScRNA-seqLevel1, ScRNA-seqLevel2)
           example: Biospecimen
           required: true
         - in: query
@@ -264,23 +303,37 @@ paths:
           schema:
             type: boolean
             default: false
-          description: if False return component requirements as a list; if True return component requirements as a dependency graph (i.e. a DAG)
+          description: >-
+            if False return component requirements as a list; if True return
+            component requirements as a dependency graph (i.e. a DAG)
           required: true
       operationId: api.routes.get_component_requirements
       responses:
-        "200":
+        '200':
           description: A list of required components associated with the source component.
           content:
             application/json:
               schema:
                 type: array
-                example: ["MolecularTest","Therapy","Diagnosis","FollowUp","Exposure","FamilyHistory","Demographics","Patient","BreastCancerTier3"]
+                items:
+                  type:
+                    string
+                example:
+                  - MolecularTest
+                  - Therapy
+                  - Diagnosis
+                  - FollowUp
+                  - Exposure
+                  - FamilyHistory
+                  - Demographics
+                  - Patient
+                  - BreastCancerTier3
       tags:
         - Manifest Operations
   /manifest/populate:
     post:
-      summary: Create a Google sheet link based on an existing manifest. 
-      description: Create a Google sheet link based on an existing manifest.  
+      summary: Create a Google sheet link based on an existing manifest.
+      description: Create a Google sheet link based on an existing manifest.
       requestBody:
         content:
           multipart/form-data:
@@ -316,20 +369,22 @@ paths:
           required: false
       operationId: api.routes.populate_manifest_route
       responses:
-        "200":
+        '200':
           description: Googlesheet link created
           content:
             application/json:
               schema:
                 type: string
-        "500":
+        '500':
           description: Check schematic log
       tags:
         - Manifest Operations
   /storage/projects:
     get:
       summary: Get all storage projects the current user has access to
-      description: Gets all storage projects the current user has access to, within the scope of the 'storageFileview' attribute.
+      description: >-
+        Gets all storage projects the current user has access to, within the
+        scope of the 'storageFileview' attribute.
       operationId: api.routes.get_storage_projects
       parameters:
         - in: query
@@ -345,20 +400,27 @@ paths:
           schema:
             type: string
             nullable: false
-          description: ID of view listing all project data assets. For example, for Synapse this would be the Synapse ID of the fileview listing all data assets for a given project.(i.e. master_fileview in config.yml)
+          description: >-
+            ID of view listing all project data assets. For example, for Synapse
+            this would be the Synapse ID of the fileview listing all data assets
+            for a given project.(i.e. master_fileview in config.yml)
           example: syn23643253
           required: true
       responses:
-        "200":
+        '200':
           description: A list of tuples
-        "500":
+        '500':
           description: Check log
       tags:
         - Synapse Storage
   /storage/project/datasets:
     get:
-      summary: Gets all datasets in folder under a given storage project that the current user has access to.
-      description: Gets all datasets in folder under a given storage project that the current user has access to.
+      summary: >-
+        Gets all datasets in folder under a given storage project that the
+        current user has access to.
+      description: >-
+        Gets all datasets in folder under a given storage project that the
+        current user has access to.
       operationId: api.routes.get_storage_projects_datasets
       parameters:
         - in: query
@@ -374,7 +436,10 @@ paths:
           schema:
             type: string
             nullable: false
-          description: ID of view listing all project data assets. For example, for Synapse this would be the Synapse ID of the fileview listing all data assets for a given project.(i.e. master_fileview in config.yml)
+          description: >-
+            ID of view listing all project data assets. For example, for Synapse
+            this would be the Synapse ID of the fileview listing all data assets
+            for a given project.(i.e. master_fileview in config.yml)
           example: syn23643253
           required: true
         - in: query
@@ -386,9 +451,9 @@ paths:
           example: syn26251192
           required: true
       responses:
-        "200":
+        '200':
           description: A list of tuples
-        "500":
+        '500':
           description: Check log
       tags:
         - Synapse Storage
@@ -411,7 +476,10 @@ paths:
           schema:
             type: string
             nullable: false
-          description: ID of view listing all project data assets. For example, for Synapse this would be the Synapse ID of the fileview listing all data assets for a given project.(i.e. master_fileview in config.yml)
+          description: >-
+            ID of view listing all project data assets. For example, for Synapse
+            this would be the Synapse ID of the fileview listing all data assets
+            for a given project.(i.e. master_fileview in config.yml)
           example: syn23643253
           required: true
         - in: query
@@ -429,19 +497,24 @@ paths:
             items:
               type: string
             nullable: true
-          description: a list of files with particular names (i.e. Sample_A.txt). If you leave it empty, it will return all dataset files under the dataset ID. 
+          description: >-
+            a list of files with particular names (i.e. Sample_A.txt). If you
+            leave it empty, it will return all dataset files under the dataset
+            ID.
           required: false
         - in: query
           name: full_path
           schema:
             type: boolean
             nullable: false
-          description: if True return the full path as part of this filename; otherwise return just base filename
+          description: >-
+            if True return the full path as part of this filename; otherwise
+            return just base filename
           required: true
       responses:
-        "200":
+        '200':
           description: A list of tuples
-        "500":
+        '500':
           description: Check schematic log
       tags:
         - Synapse Storage
