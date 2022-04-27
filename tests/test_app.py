@@ -9,3 +9,8 @@ schema = schemathesis.from_path(
 @settings(deadline=None)
 def test_manifest_generator(case):
     case.call_and_validate(timeout=30)
+
+@schema.parametrize(endpoint="/manifest/download")
+@settings(deadline=None)
+def test_manifest_download(case):
+    case.call_and_validate(timeout=30)
