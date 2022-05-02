@@ -10,10 +10,10 @@ schema = schemathesis.from_path(
 )
 
 
-@schema.parametrize(endpoint="/manifest/generate")
-@settings(deadline=None)
-def test_manifest_generator(case):
-    case.call_and_validate(timeout=30)
+# @schema.parametrize(endpoint="/manifest/generate")
+# @settings(deadline=None)
+# def test_manifest_generator(case):
+#     case.call_and_validate(timeout=30)
 
 
 @pytest.fixture
@@ -29,6 +29,6 @@ def auth_token():
 @schema.parametrize(endpoint="/manifest/download")
 @settings(deadline=None)
 def test_manifest_download(case, auth_token):
-    print(case.body)
-    #case.body['input_token'] = auth_token
-    #case.call_and_validate(timeout=30)
+    case.query = case.query or {}
+    case.query["input_token"] = auth_token
+    case.call_and_validate(timeout=30)
