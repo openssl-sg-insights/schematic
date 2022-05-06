@@ -410,18 +410,18 @@ class ValidateAttribute(object):
         warnings = []
         manifest_col = manifest_col.astype(str)
         # This will capture any if an entry is not formatted properly.
-        for i, list_string in enumerate(manifest_col):
-            if "," not in list_string and bool(list_string):
-                list_error = "not_comma_delimited"
-                errors.append(
-                    GenerateError.generate_list_error(
-                        list_string,
-                        row_num=str(i + 2),
-                        attribute_name=manifest_col.name,
-                        list_error=list_error,
-                        invalid_entry=manifest_col[i]
-                    )
-                )
+        #for i, list_string in enumerate(manifest_col):
+        #    if "," not in list_string and bool(list_string):
+        #        list_error = "not_comma_delimited"
+        #        errors.append(
+        #            GenerateError.generate_list_error(
+        #                list_string,
+        #                row_num=str(i + 2),
+        #                attribute_name=manifest_col.name,
+        #                list_error=list_error,
+        #                invalid_entry=manifest_col[i]
+        #            )
+        #        )
         # Convert string to list.
         manifest_col = manifest_col.apply(
             lambda x: [s.strip() for s in str(x).split(",")]
