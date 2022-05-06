@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/example.Patient.manifest",
+  "title": "example.Patient.manifest",
+  "type": "object",
+  "properties": {
+    "Diagnosis": {
+      "enum": [
+        "Cancer",
+        "Healthy"
+      ]
+    },
+    "Component": {},
+    "Sex": {
+      "enum": [
+        "Other",
+        "Male",
+        "Female"
+      ]
+    },
+    "Year of Birth": {},
+    "Patient ID": {
+      "not": {
+        "type": "null"
+      },
+      "minLength": 1
+    },
+    "Cancer Type": {
+      "enum": [
+        "Colorectal",
+        "Prostate",
+        "Lung",
+        "Skin",
+        "Breast",
+        ""
+      ]
+    },
+    "Family History": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "Colorectal",
+          "Prostate",
+          "Lung",
+          "Skin",
+          "Breast",
+          ""
+        ]
+      },
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "Diagnosis",
+    "Sex",
+    "Patient ID"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "Diagnosis": {
+            "enum": [
+              "Cancer"
+            ]
+          }
+        },
+        "required": [
+          "Diagnosis"
+        ]
+      },
+      "then": {
+        "properties": {
+          "Cancer Type": {
+            "enum": [
+              "Colorectal",
+              "Prostate",
+              "Lung",
+              "Skin",
+              "Breast"
+            ]
+          }
+        },
+        "required": [
+          "Cancer Type"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "Diagnosis": {
+            "enum": [
+              "Cancer"
+            ]
+          }
+        },
+        "required": [
+          "Diagnosis"
+        ]
+      },
+      "then": {
+        "properties": {
+          "Family History": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "Colorectal",
+                "Prostate",
+                "Lung",
+                "Skin",
+                "Breast"
+              ]
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "Family History"
+        ]
+      }
+    }
+  ]
+}

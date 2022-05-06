@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/example.Biospecimen.manifest",
+  "title": "example.Biospecimen.manifest",
+  "type": "object",
+  "properties": {
+    "Tissue Status": {
+      "enum": [
+        "Malignant",
+        "Healthy"
+      ]
+    },
+    "Component": {},
+    "Patient ID": {
+      "not": {
+        "type": "null"
+      },
+      "minLength": 1
+    },
+    "Sample ID": {
+      "not": {
+        "type": "null"
+      },
+      "minLength": 1
+    }
+  },
+  "required": [
+    "Tissue Status",
+    "Patient ID",
+    "Sample ID"
+  ]
+}

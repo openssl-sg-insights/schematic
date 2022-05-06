@@ -18,6 +18,8 @@ from schematic.models.metadata import MetadataModel
 from schematic.schemas.generator import SchemaGenerator
 
 from schematic.store.synapse import SynapseStorage
+import pandas as pd
+import json
 
 
 # def before_request(var1, var2):
@@ -90,6 +92,7 @@ def get_manifest_route(schema_url, title, oauth, use_annotations, dataset_id=Non
             root=data_type,
             oauth=oauth,
             use_annotations=use_annotations,
+            alphabetize_valid_values = 'ascending',
         )
 
         result = manifest_generator.get_manifest(
@@ -261,3 +264,41 @@ def get_viz_tangled_tree_layers(schema_url, figure_type):
     layers = tangled_tree.get_tangled_tree_layers(save_file=False)
 
     return layers
+def download_manifest(input_token, dataset_id, asset_view, as_json):
+    # call config handler
+    config_handler(asset_view=asset_view)
+
+    # use Synapse Storage
+    store = SynapseStorage(input_token=input_token)
+
+    # download existing file
+    manifest_data = store.getDatasetManifest(datasetId=dataset_id, downloadFile=True)
+
+    #return local file path
+    manifest_local_file_path = manifest_data['path']
+
+    # return a json (if as_json = True)
+    if as_json: 
+        manifest_csv = pd.read_csv(manifest_local_file_path)
+        manifest_json = json.loads(manifest_csv.to_json(orient="records"))
+        return manifest_json
+
+    
+    return manifest_local_file_path
+
+def get_asset_view_table(input_token, asset_view):
+    # call config handler
+    config_handler(asset_view=asset_view)
+
+    # use Synapse Storage
+    store = SynapseStorage(input_token=input_token)
+
+    # get file view table
+    file_view_table_df = store.getStorageFileviewTable()
+
+    # convert pandas dataframe to csv
+    path = os.getcwd()
+    export_path = os.path.join(path, 'tests/data/file_view_table.csv')
+    file_view_table_df.to_csv(export_path, index=False)
+
+    return export_path
