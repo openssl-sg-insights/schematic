@@ -3,7 +3,9 @@ import logging
 import pandas as pd
 import numpy as np
 from copy import deepcopy
-
+from csv import QUOTE_NONNUMERIC
+import csv
+import os
 logger = logging.getLogger(__name__)
 
 
@@ -16,11 +18,10 @@ def load_df(file_path, preserve_raw_input=True, **kwargs):
 
     Returns: a processed dataframe for manifests or unprocessed df for data models
     """
-
-    #read as normal if not reading in for validation
+    #Read CSV to df as type specified in kwargs
+    org_df = pd.read_csv(file_path, encoding='utf8', **kwargs)
+    
     if preserve_raw_input:
-        org_df = pd.read_csv(file_path, encoding='utf8', **kwargs)
-
         #only trim if not data model csv
         if 'model' not in file_path:
             org_df=trim_commas_df(org_df)
@@ -28,11 +29,7 @@ def load_df(file_path, preserve_raw_input=True, **kwargs):
         return org_df
 
     else:
-        #Read CSV to df as type string
-        org_df = pd.read_csv(file_path, dtype='string', encoding='utf8', **kwargs)
-
         float_df=deepcopy(org_df)
-
         #Find integers stored as strings 
         ints = org_df.applymap(lambda x: np.int64(x) if str.isdigit(x) else False, na_action='ignore').fillna(False)
 
@@ -46,8 +43,7 @@ def load_df(file_path, preserve_raw_input=True, **kwargs):
         
         #Store values that were entered as ints
         processed_df=processed_df.mask(ints != False, other = ints)  
-        
-        
+
         return processed_df
 
 def normalize_table(df: pd.DataFrame, primary_key: str) -> pd.DataFrame:

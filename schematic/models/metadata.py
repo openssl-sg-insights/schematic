@@ -194,6 +194,7 @@ class MetadataModel(object):
         Args:
             rootNode: a schema node label (i.e. term).
             manifestPath: a path to the manifest csv file containing annotations.
+            restrict_rules: bypass great expectations and restrict rule options to those implemented in house
 
         Returns:
             A validation status message; if there is an error the message.
@@ -211,9 +212,12 @@ class MetadataModel(object):
         errors = []
         warnings = []
 
+        kwargs={
+            "dtype":"string"
+            }
         # get annotations from manifest (array of json annotations corresponding to manifest rows)
         manifest = load_df(
-            manifestPath, preserve_raw_input=False,
+            manifestPath, preserve_raw_input=False, **kwargs,
         )  # read manifest csv file as is from manifest path
 
         # handler for mismatched components/data types
