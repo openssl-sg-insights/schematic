@@ -337,6 +337,7 @@ class MetadataModel(object):
                         datasetId = dataset_id, 
                         manifest_record_type = manifest_record_type,
                         hideBlanks = hide_blanks,
+                        useSchemaLabel = use_schema_label
                     )
                     restrict_maniest = True
                 
@@ -345,7 +346,9 @@ class MetadataModel(object):
                     datasetId = dataset_id, 
                     manifest_record_type = manifest_record_type, 
                     hideBlanks = hide_blanks,
-                    restrict_manifest=restrict_maniest,
+                    useSchemaLabel = use_schema_label,
+                    restrict_manifest=restrict_maniest
+                    
                 )
 
                 logger.info(f"No validation errors occured during validation.")
