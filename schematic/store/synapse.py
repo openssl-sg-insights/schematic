@@ -408,6 +408,7 @@ class SynapseStorage(BaseStorage):
 
         # get existing manifest Synapse ID
         manifest_id = self.getDatasetManifest(datasetId)
+        print('manifest id is here', manifest_id)
 
         # if there is no manifest return None
         if not manifest_id:
@@ -448,6 +449,7 @@ class SynapseStorage(BaseStorage):
                 manifest_id = self.associateMetadataWithFiles(manifest_filepath, datasetId)
 
         manifest = manifest.fillna("") 
+        print('manifest', manifest)
         
         return manifest_id, manifest
 

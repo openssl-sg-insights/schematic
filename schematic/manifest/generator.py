@@ -1451,9 +1451,10 @@ class ManifestGenerator(object):
         # Get manifest file associated with given dataset (if applicable)
         # populate manifest with set of new files (if applicable)
         manifest_record = store.updateDatasetManifestFiles(datasetId = dataset_id, store = False)
-       
+
         # Populate empty template with existing manifest
         if manifest_record:
+
 
             # TODO: Update or remove the warning in self.__init__() if
             # you change the behavior here based on self.use_annotations

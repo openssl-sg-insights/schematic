@@ -318,4 +318,18 @@ def get_project_manifests(input_token, project_id, asset_view):
     lst_manifest = store.getProjectManifests(projectId=project_id)
 
     return lst_manifest
-    
+
+def get_tested():
+
+    config_handler(asset_view = 'syn23643253')
+
+    manifest_generator = ManifestGenerator(
+            path_to_json_ld= "https://raw.githubusercontent.com/Sage-Bionetworks/schematic/develop/tests/data/example.model.jsonld",
+            title="testing",
+            root="Biospecimen", # data type
+            oauth=True,
+            use_annotations=True,
+            alphabetize_valid_values = 'ascending',
+        )
+    result = manifest_generator.get_manifest(dataset_id = "syn28268700")
+
