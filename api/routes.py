@@ -324,12 +324,12 @@ def get_tested():
     config_handler(asset_view = 'syn23643253')
 
     manifest_generator = ManifestGenerator(
-            path_to_json_ld= "https://raw.githubusercontent.com/Sage-Bionetworks/schematic/develop/tests/data/example.model.jsonld",
+            path_to_json_ld= "https://raw.githubusercontent.com/mialy-defelice/data_models/main/HTAN/HTAN_schema_v21_10.model.jsonld",
             title="testing",
-            root="Biospecimen", # data type
+            root="ScRNA-seqLevel1", # data type
             oauth=True,
             use_annotations=True,
             alphabetize_valid_values = 'ascending',
         )
-    result = manifest_generator.get_manifest(dataset_id = "syn28268700")
+    result = manifest_generator.get_manifest(dataset_id = "syn21984829")
 

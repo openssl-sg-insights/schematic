@@ -946,6 +946,9 @@ class ManifestGenerator(object):
         Returns:
             validation_body: dict
         """
+        #print('req_vals', req_vals)
+        #print('validation_rules', validation_rules)
+        # print('valid values', valid_values)
         if len(req_vals) > 0 and not "list" in validation_rules:
             # if more than 0 values in dropdown use ONE_OF_RANGE type of validation
             # since excel and openoffice
@@ -1473,10 +1476,10 @@ class ManifestGenerator(object):
 
         # Generate empty template and optionally fill in with annotations
         else:
-            
             # Using getDatasetAnnotations() to retrieve file names and subset
             # entities to files and folders (ignoring tables/views)
             annotations = pd.DataFrame()
+            print('self.is_file_based', self.is_file_based)
             if self.is_file_based:
                 annotations = store.getDatasetAnnotations(dataset_id)
 
