@@ -331,5 +331,8 @@ def get_tested():
             use_annotations=True,
             alphabetize_valid_values = 'ascending',
         )
-    result = manifest_generator.get_manifest(dataset_id = "syn21984829")
+    #result = manifest_generator.get_manifest(dataset_id = "syn21984829")
+    # call create empty manifest function 
+    manifest_generator.get_empty_manifest(json_schema_filepath = "https://raw.githubusercontent.com/mialy-defelice/data_models/main/HTAN/HTAN_schema_v21_10.model.jsonld")
+    
 

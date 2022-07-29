@@ -1022,6 +1022,8 @@ class ManifestGenerator(object):
             formatting_rule = self._column_to_cond_format_eq_rule(
                 i, req_val, required=is_required
             )
+            print('val_dep', val_dep)
+            print('formatting rule', formatting_rule)
 
             # construct conditional format rule
             conditional_format_rule = {
@@ -1053,6 +1055,7 @@ class ManifestGenerator(object):
             requests_body (dict): adding the conditional
             formatting rules to apply
         """
+        #print('req_vals', req_vals)
         for req_val in req_vals:
             # get this required/valid value's node label in schema, based on display name (i.e. shown to the user in a dropdown to fill in)
             req_val = req_val["userEnteredValue"]
@@ -1071,6 +1074,8 @@ class ManifestGenerator(object):
 
             # set conditiaon formatting for dependencies.
             if val_dependencies:
+                print('req_val', req_val)
+                print('val_dependencies', val_dependencies)
                 dependency_formatting_body["requests"] = self._dependency_formatting(
                     i, req_val, ordered_metadata_fields, val_dependencies,
                     dependency_formatting_body
