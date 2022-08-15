@@ -125,7 +125,6 @@ class ManifestGenerator(object):
         self, column_idx: int, condition_argument: str, required: bool = False
     ) -> dict:
         """Given a column index and an equality argument (e.g. one of valid values for the given column fields), generate a conditional formatting rule based on a custom formula encoding the logic:
-
         'if a cell in column idx is equal to condition argument, then set specified formatting'
         """
 
@@ -160,11 +159,9 @@ class ManifestGenerator(object):
 
     def _gdrive_copy_file(self, origin_file_id, copy_title):
         """Copy an existing file.
-
         Args:
             origin_file_id: ID of the origin file to copy.
             copy_title: Title of the copy.
-
         Returns:
             The copied file if successful, None otherwise.
         """
@@ -317,10 +314,8 @@ class ManifestGenerator(object):
     def _get_valid_values_from_jsonschema_property(self, prop: dict) -> List[str]:
         """Get valid values for a manifest attribute based on the corresponding
         values of node's properties in JSONSchema
-
         Args:
             prop: node properties - jsonschema dictionary
-
         Returns:
             List of valid values
         """
@@ -354,7 +349,6 @@ class ManifestGenerator(object):
     def _get_required_metadata_fields(self, json_schema, fields):
         """For the root node gather dependency requirements (all attributes linked to this node)
         and corresponding allowed values constraints (i.e. valid values).
-
         Args:
             json_schema(dict): representing a handful of values
                 representing the data model, including: '$schema', '$id', 'title',
@@ -819,7 +813,6 @@ class ManifestGenerator(object):
         """If the node validation rule is 'list' and the node also contains
         valid values, add a note a note with instructions on adding a list of
         multiple values with the multi-select option in google sheets
-
         TODO: add validation and QC rules "compiler/generator" class elsewhere
             for now have the list logic here
         Args:
@@ -829,7 +822,6 @@ class ManifestGenerator(object):
                 rules applied to node/column
             valid_values(list[str]): containing all valid values defined in the
                 data model for this node/column
-
         Returns:
             notes_body["requests"] (dict): with information on note
                 to add to the column header, about using multiselect.
@@ -984,10 +976,8 @@ class ManifestGenerator(object):
         """If there are additional attribute dependencies find the corresponding
         fields that need to be filled in and construct conditional formatting rules
         indicating the dependencies need to be filled in.
-
         set target ranges for this rule
         i.e. dependency attribute columns that will be formatted
-
         Args:
             i (int): column index
             req_val (str): node name
@@ -1232,6 +1222,8 @@ class ManifestGenerator(object):
             json_schema, required_metadata_fields
         )
 
+        print('required metadata field', required_metadata_fields)
+
         # Add additional metadata as entries to columns
         required_metadata_fields = self._get_additional_metadata(
             required_metadata_fields
@@ -1263,11 +1255,9 @@ class ManifestGenerator(object):
         self, manifest_url: str, manifest_df: pd.DataFrame
     ) -> ps.Spreadsheet:
         """Update Google Sheets using given pandas DataFrame.
-
         Args:
             manifest_url (str): Google Sheets URL.
             manifest_df (pd.DataFrame): Data frame to "upload".
-
         Returns:
             ps.Spreadsheet: A Google Sheet object.
         """
@@ -1337,10 +1327,8 @@ class ManifestGenerator(object):
 
     def get_dataframe_by_url(self, manifest_url: str) -> pd.DataFrame:
         """Retrieve pandas DataFrame from table in Google Sheets.
-
         Args:
             manifest_url (str): Google Sheets URL.
-
         Return:
             pd.DataFrame: Data frame corresponding to table in given URL.
         """
@@ -1365,10 +1353,8 @@ class ManifestGenerator(object):
         self, annotations: pd.DataFrame
     ) -> pd.DataFrame:
         """Update columns names to use display names for consistency.
-
         Args:
             annotations (pd.DataFrame): Annotations table.
-
         Returns:
             pd.DataFrame: Annotations table with updated column headers.
         """
@@ -1388,10 +1374,8 @@ class ManifestGenerator(object):
         self, annotations: pd.DataFrame
     ) -> Tuple[ps.Spreadsheet, pd.DataFrame]:
         """Generate manifest, optionally with annotations (if requested).
-
         Args:
             annotations (pd.DataFrame): Annotations table (can be empty).
-
         Returns:
             Tuple[ps.Spreadsheet, pd.DataFrame]: Both the Google Sheet
             URL and the corresponding data frame is returned.
@@ -1431,11 +1415,9 @@ class ManifestGenerator(object):
     ) -> Union[str, pd.DataFrame]:
         """Gets manifest for a given dataset on Synapse.
            TODO: move this function to class MetadatModel (after MetadataModel is refactored)
-
         Args:
             dataset_id: Synapse ID of the "dataset" entity on Synapse (for a given center/project).
             sheet_url: Determines if googlesheet URL or pandas dataframe should be returned.
-
         Returns:
             Googlesheet URL (if sheet_url is True), or pandas dataframe (if sheet_url is False).
         """
@@ -1502,7 +1484,6 @@ class ManifestGenerator(object):
 
     def populate_manifest_spreadsheet(self, existing_manifest_path, empty_manifest_url):
         """Creates a google sheet manifest based on existing manifest.
-
         Args:
             existing_manifest_path: the location of the manifest containing metadata presently stored
             empty_manifest_url: the path to a manifest template to be prepopulated with existing's manifest metadata
