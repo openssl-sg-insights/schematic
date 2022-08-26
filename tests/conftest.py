@@ -29,7 +29,7 @@ TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(TESTS_DIR, "data")
 CONFIG_PATH = os.path.join(DATA_DIR, "test_config.yml")
 CONFIG.load_config(CONFIG_PATH)
-
+GREAT_EXPECTATION_DIR = os.path.join(TESTS_DIR, "great_expectations")
 
 @pytest.fixture
 def dataset_id():
@@ -41,8 +41,9 @@ def dataset_id():
 # was required because fixture functions cannot take arguments.
 class Helpers:
     @staticmethod
-    def get_data_path(path, *paths):
-        return os.path.join(DATA_DIR, path, *paths)
+    def get_great_expectation_dir(path, *paths):
+        return os.path.join(GREAT_EXPECTATION_DIR, path, *paths)
+
 
     @staticmethod
     def get_data_file(path, *paths, **kwargs):
