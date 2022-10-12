@@ -38,54 +38,54 @@ class TestSchemaCli:
 
         assert expected_substr in result.output
 
-    def test_get_manifest_csv(self, runner, config_path, helpers, monkeypatch):
-        '''
-        test manifest get command for getting a manifest in csv format
+    # def test_get_manifest_csv(self, runner, config_path, helpers, monkeypatch):
+    #     '''
+    #     test manifest get command for getting a manifest in csv format
 
-        '''
-        #monkeypatch.chdir('tests/data')
+    #     '''
+    #     #monkeypatch.chdir('tests/data')
 
-        #output_path = os.path.abspath(os.path.join(os.getcwd(), "test.csv"))
-        output_path = helpers.get_data_path("test.csv")
+    #     #output_path = os.path.abspath(os.path.join(os.getcwd(), "test.csv"))
+    #     output_path = helpers.get_data_path("test.csv")
 
 
-        print('output_path', output_path)
+    #     print('output_path', output_path)
 
-        result = runner.invoke(manifest , ["--config", config_path, "get", "--output_csv", output_path])
+    #     result = runner.invoke(manifest , ["--config", config_path, "get", "--output_csv", output_path])
 
-        # expected_substr = (
-        #     f"Find the manifest template using this CSV file path: {output_path}"
-        # )
+    #     # expected_substr = (
+    #     #     f"Find the manifest template using this CSV file path: {output_path}"
+    #     # )
 
-        assert result.exit_code == 0
-        # assert expected_substr in result.output
+    #     assert result.exit_code == 0
+    #     # assert expected_substr in result.output
 
-        # # clean up 
-        # if os.path.exists(output_path):
-        #     os.remove(output_path)
+    #     # # clean up 
+    #     # if os.path.exists(output_path):
+    #     #     os.remove(output_path)
         
 
-    @pytest.mark.google_credentials_needed
-    def test_get_manifest_excel(self, runner, config_path, monkeypatch):
-        '''
-        test manifest get command for getting a manifest in excel format
+    # @pytest.mark.google_credentials_needed
+    # def test_get_manifest_excel(self, runner, config_path, monkeypatch):
+    #     '''
+    #     test manifest get command for getting a manifest in excel format
 
-        '''
+    #     '''
 
-        print("work dire", os.getcwd())
-        monkeypatch.chdir('tests/data')
+    #     print("work dire", os.getcwd())
+    #     monkeypatch.chdir('tests/data')
 
-        # output_path = os.path.abspath(os.path.join(os.getcwd(), "test.xlsx"))
+    #     # output_path = os.path.abspath(os.path.join(os.getcwd(), "test.xlsx"))
 
-        # result = runner.invoke(manifest , ["--config", config_path, "get", "--output_xlsx", output_path])
+    #     # result = runner.invoke(manifest , ["--config", config_path, "get", "--output_xlsx", output_path])
 
-        # expected_substr = (
-        #     f"Find the manifest template using this Excel file path: {output_path}"
-        # )
+    #     # expected_substr = (
+    #     #     f"Find the manifest template using this Excel file path: {output_path}"
+    #     # )
 
-        # assert result.exit_code == 0
-        # assert expected_substr in result.output
+    #     # assert result.exit_code == 0
+    #     # assert expected_substr in result.output
 
-        # # clean up 
-        # if os.path.exists(output_path):
-        #     os.remove(output_path)
+    #     # # clean up 
+    #     # if os.path.exists(output_path):
+    #     #     os.remove(output_path)
