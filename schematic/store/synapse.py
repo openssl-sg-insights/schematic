@@ -344,9 +344,9 @@ class SynapseStorage(BaseStorage):
             & (all_files["parentId"] == datasetId)
         ]
 
-        manifest = manifest[["id", "name"]]
+        #manifest = manifest[["id", "name"]]
         censored_regex=re.compile('.*censored.*')
-        
+        version = None
         # if there is no pre-exisiting manifest in the specified dataset
         if manifest.empty:
             return ""
@@ -367,29 +367,73 @@ class SynapseStorage(BaseStorage):
             else:
                 manifest_syn_id = manifest["id"][0]
 
+                my_user_ID = '3441694'
+
+                # check if manfiest exists with new naming convention
+                manifest_syn_id = manifest.loc[manifest.name != 'synapse_storage_manifest.csv']["id"][0]
+                version = manifest.loc[manifest.name != 'synapse_storage_manifest.csv']["currentVersion"][0]
+                current_manfiest = self.syn.get(entity = manifest_syn_id, version = version, downloadFile = False)
+                # loop through versions until one is found not modified by my user Id
+
+                if current_manfiest.properties.modifiedBy == my_user_ID:
+                    # use syn.get and check modified by != my_user_ID
+                    while current_manfiest.properties.modifiedBy == my_user_ID and version > 1 :
+                        version -= 1
+                        current_manfiest = self.syn.get(entity = manifest_syn_id, version = version, downloadFile = False)
+                    
+                    # if none are found with new naming convention, get one with old name
+                    if current_manfiest.properties.modifiedBy == my_user_ID:
+                        manifest_syn_id = manifest.loc[manifest.name == 'synapse_storage_manifest.csv']["id"][0]
+                        version = None
+                        print(f"Org: {manifest_syn_id}")
+                    else:
+                        
+                        print(f"New: {manifest_syn_id}. Version: {version}")                        
 
             # if the downloadFile option is set to True
             if downloadFile:
                 # enables retrying if user does not have access to uncensored manifest
                 while True:
                     # pass synID to synapseclient.Synapse.get() method to download (and overwrite) file to a location
-                    try:
-                        if 'manifest_folder' in CONFIG['synapse'].keys():
-                            manifest_data = self.syn.get(
-                                manifest_syn_id,
-                                downloadLocation=CONFIG["synapse"]["manifest_folder"],
-                                ifcollision="overwrite.local",
-                            )
-                            break
-                        # if no manifest folder is set, download to cache
-                        else:
-                            manifest_data = self.syn.get(
-                                manifest_syn_id,
-                            )
-                            break
-                    # If user does not have access to uncensored manifest, use censored instead
-                    except(SynapseUnmetAccessRestrictions):
-                            manifest_syn_id=manifest[censored]["id"][0]
+                    if version:
+                        pass
+                        try:
+                            if 'manifest_folder' in CONFIG['synapse'].keys():
+                                manifest_data = self.syn.get(
+                                    manifest_syn_id,
+                                    downloadLocation=CONFIG["synapse"]["manifest_folder"],
+                                    ifcollision="overwrite.local",
+                                    version = version,
+                                )
+                                break
+                            # if no manifest folder is set, download to cache
+                            else:
+                                manifest_data = self.syn.get(
+                                    manifest_syn_id,
+                                    version = version,
+                                )
+                                break
+                        # If user does not have access to uncensored manifest, use censored instead
+                        except(SynapseUnmetAccessRestrictions):
+                                manifest_syn_id=manifest[censored]["id"][0]                    
+                    else:
+                        try:
+                            if 'manifest_folder' in CONFIG['synapse'].keys():
+                                manifest_data = self.syn.get(
+                                    manifest_syn_id,
+                                    downloadLocation=CONFIG["synapse"]["manifest_folder"],
+                                    ifcollision="overwrite.local",
+                                )
+                                break
+                            # if no manifest folder is set, download to cache
+                            else:
+                                manifest_data = self.syn.get(
+                                    manifest_syn_id,
+                                )
+                                break
+                        # If user does not have access to uncensored manifest, use censored instead
+                        except(SynapseUnmetAccessRestrictions):
+                                manifest_syn_id=manifest[censored]["id"][0]
                     
                 # Rename manifest file if indicated by user.
                 if newManifestName:
@@ -639,6 +683,7 @@ class SynapseStorage(BaseStorage):
                 manifest_name = manifest_info["properties"]["name"]
                 manifest_path = manifest_info["path"]
                 manifest = ((datasetId, datasetName), (manifest_id, manifest_name), ("", ""))
+                print(manifest)
                 if not dry_run:
                     manifest_syn_id = self.associateMetadataWithFiles(sg, manifest_path, datasetId, manifest_record_type='table')
                 manifest_loaded.append(manifest)
@@ -664,6 +709,7 @@ class SynapseStorage(BaseStorage):
                 manifests.append(manifest)
 
                 manifest_info = self.getDatasetManifest(datasetId, downloadFile=True)
+                print(manifest_info)
                 if manifest_info:
                     manifest_id = manifest_info["properties"]["id"]
                     manifest_name = manifest_info["properties"]["name"]
@@ -672,7 +718,7 @@ class SynapseStorage(BaseStorage):
 
                     manifest = ((datasetId, datasetName), (manifest_id, manifest_name), ("", ""))
                     manifest_loaded.append(manifest)
-
+                    print(manifest)
                     annotation_entities = self.storageFileviewTable[
                             (self.storageFileviewTable['id'].isin(manifest_df['entityId']))
                             & (self.storageFileviewTable['type'] == 'folder')
