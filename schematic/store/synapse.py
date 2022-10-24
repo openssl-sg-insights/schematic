@@ -372,6 +372,8 @@ class SynapseStorage(BaseStorage):
                 # check if manfiest exists with new naming convention
                 manifest_syn_id = manifest.loc[manifest.name != 'synapse_storage_manifest.csv']["id"][0]
                 version = manifest.loc[manifest.name != 'synapse_storage_manifest.csv']["currentVersion"][0]
+                if version > 1:
+                    version -= 1
                 current_manfiest = self.syn.get(entity = manifest_syn_id, version = version, downloadFile = False)
                 # loop through versions until one is found not modified by my user Id
 
@@ -683,7 +685,7 @@ class SynapseStorage(BaseStorage):
                 manifest_name = manifest_info["properties"]["name"]
                 manifest_path = manifest_info["path"]
                 manifest = ((datasetId, datasetName), (manifest_id, manifest_name), ("", ""))
-                print(manifest)
+                print(f"{manifest} \n")
                 if not dry_run:
                     manifest_syn_id = self.associateMetadataWithFiles(sg, manifest_path, datasetId, manifest_record_type='table')
                 manifest_loaded.append(manifest)
@@ -709,7 +711,7 @@ class SynapseStorage(BaseStorage):
                 manifests.append(manifest)
 
                 manifest_info = self.getDatasetManifest(datasetId, downloadFile=True)
-                print(manifest_info)
+                #print(manifest_info)
                 if manifest_info:
                     manifest_id = manifest_info["properties"]["id"]
                     manifest_name = manifest_info["properties"]["name"]
@@ -719,6 +721,7 @@ class SynapseStorage(BaseStorage):
                     manifest = ((datasetId, datasetName), (manifest_id, manifest_name), ("", ""))
                     manifest_loaded.append(manifest)
                     print(manifest)
+                    print(f"version: {manifest_info.properties.versionNumber} \n")
                     annotation_entities = self.storageFileviewTable[
                             (self.storageFileviewTable['id'].isin(manifest_df['entityId']))
                             & (self.storageFileviewTable['type'] == 'folder')
